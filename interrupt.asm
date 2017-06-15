@@ -1,5 +1,5 @@
 ;-------------------------------------------------------------------------------
-; Interrupt service routine for both Timer A1 and Timer A0
+; Interrupt service routine for both Timer A1
 ;-------------------------------------------------------------------------------
  			.cdecls C,LIST,"msp430.h"
 				
