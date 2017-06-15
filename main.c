@@ -43,19 +43,6 @@ unsigned int sine_values[] = {
     81,  84,  87,  90,  93,  96,  99, 102, 105, 108, 111, 115, 118, 121, 124, 127
 };
 
-/*const unsigned int segtab[] = {
-        0x7E,
-        0x30,
-        0x6D,
-        0x79,
-        0x33,
-        0x5b,
-        0x5f,
-        0x70,
-        0x7f,
-        0x7b
-};*/
-
 /**
  * @brief Main function
  *
@@ -63,46 +50,41 @@ unsigned int sine_values[] = {
  */
 int main(void)
 {
-    WDTCTL = WDTPW | WDTHOLD;					// Shut down watchdog timer
+    WDTCTL = WDTPW | WDTHOLD;					              // Shut down watchdog timer
 
-    P2DIR &= 0xCF;                      		// set P2.4 and P2.5 as in
-    P2IES |= BIT4 | BIT5;               		// set P2.4 and P2.5 irq as h->l transition
-    P2IFG &= ~(BIT4 | BIT5);            		// clear P2.4 and P2.5 IFG
-    P2IE |= BIT4 | BIT5;                		// enable P2.4 and P2.5 isr
+    P2DIR &= 0xCF;                      		      // set P2.4 and P2.5 as in
+    P2IES |= BIT4 | BIT5;               		      // set P2.4 and P2.5 irq as h->l transition
+    P2IFG &= ~(BIT4 | BIT5);            		      // clear P2.4 and P2.5 IFG
+    P2IE |= BIT4 | BIT5;                		      // enable P2.4 and P2.5 isr
 
-    P2DIR &= ~BIT6;                     		// just in case i need this sh it
-    P2IES |= BIT6;
-    P2IFG &= ~BIT6;
-    P2IE |= BIT6;
+    P11DIR |= 0x03;                     		      // setting P11.0 and P11.1 as out
+    P6DIR |= ~BIT7;                     		      // setting P6 pins as out
 
-    P11DIR |= 0x03;                     		// setting P11.0 and P11.1 as out
-    P6DIR |= ~BIT7;                     		// setting P6 pins as out
-
-    P4DIR |= BIT5;                      		// P4.3 set as out
-    P4SEL |= BIT5;                      		// P4.3 use for TimerB0
+    P4DIR |= BIT5;                      	      	// P4.3 set as out
+    P4SEL |= BIT5;                      	      	// P4.3 use for TimerB0
 
 
-    TA0CCR0 = 5242;                     		// value representing period for 7-segment LED multiplexing
-    TA0CCTL0 |= CCIE;                   		// enables TA0CCR0 isr
-    TA0CCTL0 &= ~CCIFG;                 		// clears interrupt flag
+    TA0CCR0 = 5242;                     		      // value representing period for 7-segment LED multiplexing
+    TA0CCTL0 |= CCIE;                   		      // enables TA0CCR0 isr
+    TA0CCTL0 &= ~CCIFG;                 		      // clears interrupt flag
     TA0CTL = TASSEL__SMCLK | MC__UP | TACLR;    // use SMCLK clock source and reset it
 
-    TA1CCR0 = 2000;                     		// debounce period
-    TA1CCTL0 |= CCIE;							// enables TA1CCR0 isr
-    TA1CCTL0 &= ~CCIFG;							// clears interrupt flag
-    TA1CTL = TASSEL__SMCLK | TACLR;				// sets timer to use SMCLK clock source and clears it
+    TA1CCR0 = 2000;                     		      // debounce period
+    TA1CCTL0 |= CCIE;							                    // enables TA1CCR0 isr
+    TA1CCTL0 &= ~CCIFG;							                  // clears interrupt flag
+    TA1CTL = TASSEL__SMCLK | TACLR;				         // sets timer to use SMCLK clock source and clears it
 
-    TB0CCTL5 = OUTMOD_7;                		// reset/set outmode
-    TB0CCR0 = 255;                      		// period
-    TB0CCR5 = sine_values[sample];      		// initial pulse width value
-    TB0CCTL0 |= CCIE;                   		// enables TB0CCR0 isr
-    TB0CCTL0 &= ~CCIFG;                 		// clears interrupt flag
+    TB0CCTL5 = OUTMOD_7;                		      // reset/set outmode
+    TB0CCR0 = 255;                      		      // period
+    TB0CCR5 = sine_values[sample];      		      // initial pulse width value
+    TB0CCTL0 |= CCIE;                   		      // enables TB0CCR0 isr
+    TB0CCTL0 &= ~CCIFG;                 		      // clears interrupt flag
     TB0CTL = TBSSEL__SMCLK | MC__UP | TBCLR;    // use SMCLK clock source and configure timer for UP mode and reset it
 
 
 
 
-    __enable_interrupt();						// enables interrupts
+    __enable_interrupt();						                 // enables interrupts
 
     while(1);
 }
@@ -116,7 +98,7 @@ void __attribute__ ((interrupt(PORT2_VECTOR))) P2ISR (void)
 {
     TA1CTL |= TASSEL__SMCLK | MC__UP | TACLR;   // start counting debounce period
 
-    P2IFG &= ~(BIT4 + BIT5);           			// clear button flags
+    P2IFG &= ~(BIT4 + BIT5);           			      // clear button flags
     return;
 }
 
@@ -127,55 +109,34 @@ void __attribute__ ((interrupt(PORT2_VECTOR))) P2ISR (void)
  */
 void __attribute__ ((interrupt(TIMER0_B0_VECTOR))) TB0CCR0ISR (void)
 {
-    if(++cnt == 16)                     		// check if sample value was used for 16 times already
+    if(++cnt == 16)                     		      // check if sample value was used for 16 times already
     {
-        cnt = 0;                        		// if it is true, reset counter
+        cnt = 0;                        		      // if it is true, reset counter
         sample = (sample + frequency) & 0xff;   // also take next sample value
         TB0CCR5 = sine_values[sample];          // and move it toward compare register
     }
-    TB0CCTL0 &= ~CCIFG;                			// clear counter flag
+    TB0CCTL0 &= ~CCIFG;                		      	// clear counter flag
     return;
 }
 
-/*void __attribute__ ((interrupt(TIMER0_A0_VECTOR))) TA0CCR0ISR (void)
+void __attribute__ ((interrupt(TIMER0_A0_VECTOR))) TA0CCR0ISR (void)
 {
-    switch(digit)                           // switch to multiplexing digit
+    switch(digit)                               // switch to multiplexing digit
     {
     case 0:
-        P11OUT |= BIT0;                     // deselect appropriate 7-segment LED digit
-        P6OUT = segtab[frequency / 10];     // put
-        P11OUT &= ~BIT1;                    // select appropriate 7-segment LED digit
-        digit = 1;                          // change digit for next time
+        P11OUT |= BIT0;                         // deselect appropriate 7-segment LED digit
+        P6OUT = segtab[frequency / 10];         // put
+        P11OUT &= ~BIT1;                        // select appropriate 7-segment LED digit
+        digit = 1;                              // change digit for next time
         break;
     case 1:
-        P11OUT |= BIT1;                     // deselect appropriate 7-segment LED digit
-        P6OUT = segtab[frequency % 10];     // put
-        P11OUT &= ~BIT0;                    // select appropriate 7-segment LED digit
-        digit = 0;                          // change digit for next time
+        P11OUT |= BIT1;                         // deselect appropriate 7-segment LED digit
+        P6OUT = segtab[frequency % 10];         // put
+        P11OUT &= ~BIT0;                        // select appropriate 7-segment LED digit
+        digit = 0;                              // change digit for next time
         break;
     default: break;
     }
-    TA0CCTL0 &= ~CCIFG;                     // clear fu ckin flag
+    TA0CCTL0 &= ~CCIFG;                         // clear fu ckin flag
     return;
-}*/
-
-/*void __attribute__ ((interrupt(TIMER1_A0_VECTOR))) TA1CCR0ISR (void)
-{
-    TA1CTL &= ~MC__UP;                          // stop the counter and parse button input
-
-    if (0 == (P2IN & BIT4)) {                   // check if P2.4 is still pressed
-        frequency  = (frequency + 1) & 0xf;     // incrising frequency by one with module of 16
-        if(frequency == 0)
-            frequency = 16;
-    }
-
-    if (0 == (P2IN & BIT5)) {                   // check if P2.5 is still pressed
-        frequency  = (frequency - 1) & 0xf;     // decrising frequency by one with module of 16
-        if(frequency == 0)                      // if frequency reached unvalid value of 0 Hz, change it to 16 Hz in next command
-            frequency = 16;
-    }
-
-    TA1CCTL0 &= ~CCIFG;                         // clear this counters interrupt flag
-    TA1CTL |= TACLR;                            // reset the counter too, for next use
-    return;
-}*/
+}
