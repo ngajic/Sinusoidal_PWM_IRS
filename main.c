@@ -43,6 +43,20 @@ unsigned int sine_values[] = {
     81,  84,  87,  90,  93,  96,  99, 102, 105, 108, 111, 115, 118, 121, 124, 127
 };
 
+/** Table of 7-segment values for each digit */
+const unsigned int segtab[] = {
+         0x7E,
+         0x30,
+         0x6D,
+         0x79,
+         0x33,
+         0x5b,
+         0x5f,
+         0x70,
+         0x7f,
+         0x7b
+ };
+
 /**
  * @brief Main function
  *
